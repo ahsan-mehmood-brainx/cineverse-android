@@ -1,15 +1,64 @@
-*.iml
-.gradle
-/local.properties
-/.idea/caches
-/.idea/libraries
-/.idea/modules.xml
-/.idea/workspace.xml
-/.idea/navEditor.xml
-/.idea/assetWizardSettings.xml
-.DS_Store
-/build
-/captures
-.externalNativeBuild
-.cxx
+# Built application files
+*.apk
+*.aab
+*.ap_
+*.aar
+
+# Gradle / build
+build/
+.gradle/
+gradle-app.setting
+!gradle-wrapper.jar
+!gradle-wrapper.properties
+
+# Local configuration file (contains SDK path)
 local.properties
+
+# Secrets / API keys — never commit real credentials
+apikey.properties
+secrets.properties
+*.secrets.properties
+.env
+.env.*
+!.env.example
+
+# Signing keys — remove these lines if you intentionally version-control a debug keystore
+*.jks
+*.keystore
+
+# Android Studio / IntelliJ
+.idea/*
+!.idea/codeStyles/
+!.idea/copyright/
+.idea/caches/
+.idea/libraries/
+.idea/modules.xml
+.idea/workspace.xml
+.idea/navEditor.xml
+.idea/assetWizardSettings.xml
+.idea/deploymentTargetDropDown.xml
+*.iml
+.navigation/
+
+# Native build (NDK/CMake)
+.externalNativeBuild
+.cxx/
+
+# Generated Hilt/KSP/KAPT sources if emitted outside build/
+**/generated/source/kapt/
+**/generated/source/ksp/
+**/generated/ap_generated_sources/
+**/hilt_aggregated_deps/
+
+# Log/profiling
+*.log
+captures/
+output.json
+
+# OS junk files
+.DS_Store
+Thumbs.db
+
+# Room schema export folders (app/schemas/, etc.)
+# NOT ignored — Room schema JSON files are committed intentionally.
+# See explanation below the file listing.

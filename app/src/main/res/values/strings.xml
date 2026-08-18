@@ -5,6 +5,7 @@
     <string name="title_home">Home</string>
     <string name="title_categories">Categories</string>
     <string name="title_search">Search</string>
+    <string name="title_explore">Explore</string>
     <string name="title_favorites">Favorites</string>
     <string name="title_profile">Profile</string>
     <string name="title_movie_detail">Movie Detail</string>

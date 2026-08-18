@@ -24,7 +24,7 @@
     <fragment
         android:id="@+id/searchFragment"
         android:name="com.example.cineverse.ui.search.SearchFragment"
-        android:label="@string/title_search"
+        android:label="@string/title_explore"
         tools:layout="@layout/fragment_search">
         <action
             android:id="@+id/action_search_to_movieDetail"

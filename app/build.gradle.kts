@@ -106,7 +106,21 @@ dependencies {
     // WorkManager
     implementation(libs.androidx.work.runtime.ktx)
 
+    // Unit Testing
     testImplementation(libs.junit)
+    testImplementation(libs.mockito.core)
+    testImplementation(libs.mockito.kotlin)
+    testImplementation(libs.google.truth)
+    testImplementation(libs.kotlinx.coroutines.test)
+    testImplementation(libs.androidx.lifecycle.runtime.testing)
+    testImplementation(libs.turbine)
+
+    // Instrumented/Androidtest
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
+    androidTestImplementation(libs.androidx.test.runner)
+    androidTestImplementation(libs.androidx.fragment.testing)
+    androidTestImplementation(libs.mockito.android)
+    androidTestImplementation(libs.google.truth)
+    androidTestImplementation(libs.hilt.testing)
 }

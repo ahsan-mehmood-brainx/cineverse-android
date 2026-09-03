@@ -9,12 +9,22 @@ import kotlinx.coroutines.flow.asStateFlow
 import javax.inject.Inject
 
 /**
- * Skeleton only — will depend on a use case / repository interface once the
- * home feed (popular/trending movies) is implemented.
+ * Backed by [HomeMockData] until the home feed is wired to a repository; the Resource
+ * wrapper and [retry] are kept so swapping in a real data source later is a drop-in change.
  */
 @HiltViewModel
 class HomeViewModel @Inject constructor() : ViewModel() {
 
-    private val _uiState = MutableStateFlow<Resource<Unit>>(Resource.Loading)
-    val uiState: StateFlow<Resource<Unit>> = _uiState.asStateFlow()
+    private val _uiState = MutableStateFlow<Resource<HomeUiState>>(Resource.Loading)
+    val uiState: StateFlow<Resource<HomeUiState>> = _uiState.asStateFlow()
+
+    init {
+        loadHome()
+    }
+
+    fun retry() = loadHome()
+
+    private fun loadHome() {
+        _uiState.value = Resource.Success(HomeMockData.toUiState())
+    }
 }

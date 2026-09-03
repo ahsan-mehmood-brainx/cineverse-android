@@ -19,4 +19,13 @@
         <item name="android:color">@android:color/transparent</item>
     </style>
 
+    <!-- Rounds only the top corners of a movie poster so they align with the card's
+         corner radius while the bottom edge stays flush with the title text below it. -->
+    <style name="ShapeAppearanceOverlay.CineVerse.MovieCard" parent="">
+        <item name="cornerSizeTopLeft">12dp</item>
+        <item name="cornerSizeTopRight">12dp</item>
+        <item name="cornerSizeBottomLeft">0dp</item>
+        <item name="cornerSizeBottomRight">0dp</item>
+    </style>
+
 </resources>

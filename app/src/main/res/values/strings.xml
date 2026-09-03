@@ -19,4 +19,14 @@
     <!-- Navigation drawer -->
     <string name="nav_drawer_open">Open navigation drawer</string>
     <string name="nav_drawer_close">Close navigation drawer</string>
+
+    <!-- Home screen -->
+    <string name="action_search">Search</string>
+    <string name="action_see_all">See All</string>
+    <string name="home_greeting_title">Welcome back 👋</string>
+    <string name="home_greeting_subtitle">Discover something you\'ll love today.</string>
+    <string name="section_trending">Trending Now</string>
+    <string name="section_popular">Popular Movies</string>
+    <string name="section_top_rated">Top Rated</string>
+    <string name="section_genres">Genres</string>
 </resources>

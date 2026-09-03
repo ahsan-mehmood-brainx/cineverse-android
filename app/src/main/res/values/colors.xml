@@ -21,4 +21,8 @@
 
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
+
+    <!-- Rating star tint — kept identical in light/dark since it reads as a fixed
+         "gold star" brand color rather than theme-dependent text/surface content. -->
+    <color name="rating_star">#FFFFC107</color>
 </resources>

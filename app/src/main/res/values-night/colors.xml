@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Material 3 dark palette, paired with values/colors.xml via Theme.CineVerse (DayNight). -->
+    <color name="md_theme_primary">#FFD0BCFF</color>
+    <color name="md_theme_onPrimary">#FF381E72</color>
+    <color name="md_theme_primaryContainer">#FF4F378B</color>
+    <color name="md_theme_onPrimaryContainer">#FFEADDFF</color>
+
+    <color name="md_theme_secondary">#FFCCC2DC</color>
+    <color name="md_theme_onSecondary">#FF332D41</color>
+    <color name="md_theme_secondaryContainer">#FF4A4458</color>
+    <color name="md_theme_onSecondaryContainer">#FFE8DEF8</color>
+
+    <color name="md_theme_background">#FF1C1B1F</color>
+    <color name="md_theme_onBackground">#FFE6E1E5</color>
+    <color name="md_theme_surface">#FF1C1B1F</color>
+    <color name="md_theme_onSurface">#FFE6E1E5</color>
+
+    <color name="md_theme_error">#FFF2B8B5</color>
+    <color name="md_theme_onError">#FF601410</color>
+
+    <color name="black">#FF000000</color>
+    <color name="white">#FFFFFFFF</color>
+
+    <!-- Rating star tint — kept identical in light/dark since it reads as a fixed
+         "gold star" brand color rather than theme-dependent text/surface content. -->
+    <color name="rating_star">#FFFFC107</color>
+</resources>

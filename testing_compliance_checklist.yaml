@@ -1,0 +1,129 @@
+meta:
+  id: testing_compliance
+  title: Testing Compliance Checklist
+  description: >
+    Dedicated, detailed testing requirements for every Android pull request.
+    This checklist is evaluated as a separate, mandatory phase of the review.
+    The goal is to guarantee that every minor and major feature, every change,
+    every edge case, and every UI update introduced by the PR is properly
+    tested and verified before merge. Tests must ship in the same PR as the
+    implementation (TDD discipline). Deferring tests to a follow-up PR requires
+    explicit written justification in the PR description. Applies equally to
+    projects using JUnit4 or JUnit5, and to screens built with Jetpack Compose,
+    XML Views, or a mix of both.
+  evaluation_mode: strict
+  applies_when: >
+    Any PR that adds or changes behavior, logic, UI, data mapping, navigation,
+    or configuration. Pure documentation, resource-only, or build-script-only
+    PRs may mark sections N/A.
+
+sections:
+  - id: test_presence_and_tdd
+    title: Test Presence and TDD Discipline
+    description: Tests must accompany the code they cover and be written to verify behavior, not just to exist.
+    checks:
+      - Every new or changed unit of behavior has at least one corresponding test in the same PR.
+      - Tests are committed together with the implementation, not deferred to a later PR.
+      - No production behavior is merged with zero test coverage unless explicitly justified in the PR description.
+      - Test names describe behavior and expected outcome (e.g. `emits Error state when login returns 401` or a backtick-style `` `emits error state when login returns 401`() `` function name), not implementation details.
+      - Tests are deterministic and do not depend on real network, real clock, real device time zone, or test execution order.
+      - No skipped tests (`@Ignore`) or commented-out tests without an inline justification and a tracking reference.
+      - Removed or changed behavior has its obsolete tests updated or removed rather than left stale.
+
+  - id: unit_tests
+    title: Unit Tests (Business Logic)
+    description: Pure logic must be unit tested in isolation with mocked dependencies.
+    checks:
+      - Services, managers, use cases/interactors, repositories, and ViewModels changed in the PR have unit tests.
+      - Mappers, parsers, validators, formatters, and extension functions changed in the PR have unit tests.
+      - Each public method has tests for the happy path, boundary values, and failure/error path.
+      - Dependencies are mocked or faked (MockK preferred for Kotlin, or Mockito if already established) so the unit is tested in isolation.
+      - ViewModel tests assert the full emitted state sequence (e.g. Loading then Success, or Loading then Error) via `StateFlow`/`LiveData` observation (Turbine for Flow testing is preferred where available).
+      - Coroutines under test use `runTest`/`TestDispatcher` (kotlinx-coroutines-test) instead of real delays or `Thread.sleep`.
+      - Asynchronous logic is tested for success, failure, timeout, and cancellation where applicable.
+
+  - id: model_and_serialization_tests
+    title: Model and Serialization Tests
+    description: Every model touched by the PR must be verified for safe parsing and serialization.
+    checks:
+      - JSON deserialization (Moshi/Gson/kotlinx.serialization) is tested with a complete/valid payload.
+      - Deserialization is tested with missing keys, null values, wrong types, and empty collections, asserting safe defaults are applied.
+      - Serialization round-trip is tested (object to JSON to object) where the model is both serialized and deserialized.
+      - Nested objects and lists are tested for safe parsing including empty and null cases.
+      - Enum/sealed-class mapping is tested for known backend values and for unknown/missing values falling back safely.
+      - `equals()`/`hashCode()`/`copy()` behavior is tested where the data class relies on it (e.g. for diffing in `RecyclerView`/Compose lists).
+      - Room entity ↔ domain model mapping is tested where the project uses Room.
+
+  - id: view_and_compose_tests
+    title: View and Compose UI Tests
+    description: New or changed screens/composables must be verified in an appropriate UI test harness.
+    checks:
+      - New or changed Composables have tests using `createComposeRule`/`createAndroidComposeRule`.
+      - New or changed Fragments/Activities/custom Views have tests using Espresso or Robolectric, per the project's established approach.
+      - Loading, success, empty, and error states are each rendered and asserted.
+      - User interactions (tap, text entry, scroll, swipe, long press) are simulated and their effects asserted (`performClick`, `performTextInput`, Espresso `ViewActions`).
+      - Form validation is tested for valid input, invalid input, and empty input.
+      - Conditional UI (role-based, feature-flagged, permission-based) is tested for each branch.
+      - Screens/Composables that depend on a ViewModel are tested with a fake/mocked ViewModel exposing controlled state, asserting the correct rendering per state.
+      - Assertions verify actual content (text, content descriptions, counts), not just that the screen renders without throwing.
+
+  - id: ui_change_and_visual_tests
+    title: UI Change and Visual Regression Tests
+    description: Visual and layout changes must be verified so regressions are caught.
+    checks:
+      - Screenshot/snapshot tests (e.g. Paparazzi, Compose Preview screenshot testing, or the project's chosen tool) are added or updated for new or visually changed Composables/Views, if the project uses screenshot testing.
+      - Screenshot tests cover light and dark theme where both are supported.
+      - Layout is verified for long text, empty text, and large accessibility font-scale settings.
+      - Layout is verified across at least a small and a large screen size / device profile (e.g. phone and tablet, or a compact and expanded window size class).
+      - RTL layout is verified where the app supports RTL locales.
+      - Overflow/clipping safety is asserted for dynamic content.
+      - Any changed spacing, color, or typography that maps to design-system tokens is verified to use those tokens in the test setup.
+
+  - id: integration_and_functional_tests
+    title: Integration and Functional Tests (End-to-End Flows)
+    description: Critical user journeys spanning multiple screens or systems must be verified end to end.
+    checks:
+      - New multi-screen flows (login, signup, onboarding, checkout, payment, key CRUD) have instrumented UI tests (Espresso or Compose UI test) covering the flow end-to-end.
+      - Navigation between screens and correct back-stack behavior is asserted (Navigation Component `TestNavHostController` or Compose `NavController` test utilities).
+      - Passing and returning arguments between destinations is tested, including missing/invalid arguments.
+      - Persistence flows (writing then reading DataStore/SharedPreferences, Room database) are tested end to end with an in-memory database or fake.
+      - Functional tests confirm the user-facing outcome described in the PRD acceptance criteria.
+      - Permission-gated flows are tested for granted, denied, and permanently-denied outcomes (using `GrantPermissionRule` or a fake permission checker).
+      - Offline / no-connectivity behavior is tested where the feature depends on the network.
+
+  - id: api_and_network_tests
+    title: API and Network Tests
+    description: Every network interaction must be tested against realistic success and failure conditions using mocks.
+    checks:
+      - API calls are tested with a mocked HTTP layer (`MockWebServer`, a faked Retrofit service interface, or MockK/Mockito on the API client) — no live network in tests.
+      - Success (2xx) responses are tested and asserted to map into the correct typed model/state.
+      - Client errors (400, 401, 403, 404, 422) are tested and asserted to produce the correct handled state/message.
+      - Server errors (5xx) are tested and asserted to produce a graceful failure state.
+      - Timeout and connectivity failure (`IOException`, socket timeout) are tested.
+      - Malformed / unexpected JSON payloads are tested to confirm parsing does not crash and falls back safely.
+      - Empty responses and empty lists are tested.
+      - Pagination, retry, and cancellation are tested where the feature implements them.
+      - Auth token refresh / re-auth on 401 (OkHttp `Authenticator`/interceptor) is tested where applicable.
+
+  - id: edge_cases_and_error_paths
+    title: Edge Cases and Error Paths
+    description: Boundary conditions and failure paths must be explicitly tested, not assumed.
+    checks:
+      - Empty, null, and zero inputs are tested for every new public behavior.
+      - Maximum/oversized inputs (very long strings, large lists) are tested where relevant.
+      - Duplicate, out-of-order, and rapid repeated actions (double-tap submit, fast navigation) are tested.
+      - Concurrency and race conditions are tested where the feature has parallel coroutine work.
+      - Error recovery is tested (retry after failure returns to a healthy state).
+      - Loading state is asserted to always resolve (no infinite loader) on both success and failure.
+      - Resource cleanup is verified (coroutine scopes cancelled, listeners/observers removed, ViewBinding cleared) where testable.
+
+  - id: coverage_and_ci
+    title: Coverage and CI Integration
+    description: Coverage must not regress and tests must run reliably in CI.
+    checks:
+      - Coverage does not visibly regress for the files changed in the PR (Jacoco or the project's configured coverage tool).
+      - New critical logic (parsing, money, auth, permissions) has high, meaningful coverage — not just line coverage from execute-only tests.
+      - All added tests pass locally and in CI (`./gradlew test` for unit tests, `./gradlew connectedAndroidTest` for instrumented tests).
+      - Test folder structure mirrors the main source structure (`src/test/java/...` and `src/androidTest/java/...` mirroring `src/main/java/...`).
+      - Shared mocks, fakes, and test fixtures reuse existing test infrastructure instead of duplicating setup.
+      - The PR description states which test types were added or updated (unit / Compose-UI / instrumented / API / functional / screenshot).

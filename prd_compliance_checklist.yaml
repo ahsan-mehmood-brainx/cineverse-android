@@ -1,0 +1,75 @@
+meta:
+  id: prd_compliance
+  title: PRD Compliance Checklist
+  description: >
+    Dedicated requirements for the Product Requirements Document (PRD) associated
+    with a pull request, and for how the PR must conform to that PRD. This
+    checklist is evaluated as a separate, important phase of the review. Any new
+    feature, bug fix, enhancement, refactor, or other change in the PR must be
+    traceable to a clear, professional PRD (or, for small fixes, an equivalent
+    ticket / root-cause note). Violations must be flagged in the review summary
+    with an actionable fix.
+  evaluation_mode: strict
+  applies_when: >
+    Feature PRs always require a PRD reference. Bug-fix, enhancement, and refactor
+    PRs require at minimum a linked ticket, incident report, or root-cause note
+    that plays the PRD role. Trivial chores (formatting, dependency bump, doc-only)
+    may mark this N/A with a one-line reason.
+
+sections:
+  - id: prd_reference_presence
+    title: PRD Reference Presence and Reachability
+    description: The PR must point to a reachable, non-placeholder PRD or equivalent source of intent.
+    checks:
+      - The PR description references the PRD via a link (Notion, Confluence, Jira, Linear, Google Doc), a ticket ID that embeds/links the PRD, an attached .md/.pdf PRD committed in the repo, or a Figma spec link.
+      - For a feature PR (Auth, Onboarding, Payments, Chat, Profile, Notifications, Search, Cart, Checkout, KYC, Wallet, etc.) a PRD reference is present and reachable.
+      - Bug-fix, enhancement, or refactor PRs reference the originating ticket, incident report, or root-cause note in place of a full PRD.
+      - The reference is not a placeholder such as "TBD", "N/A for now", "coming later", or an empty/broken link.
+      - The reference is specific to this change (not a generic link to a board or epic with no pointer to the relevant item).
+
+  - id: prd_structure_quality
+    title: PRD Structure and Professional Quality
+    description: >
+      A professional, clean, and compatible PRD should contain the following
+      well-defined specifications. The reviewer checks that the referenced PRD
+      (when attached in the repo or quoted in the PR) meets this bar, and flags
+      gaps that make the change unverifiable.
+    checks:
+      - Problem statement — clearly states the user/business problem being solved.
+      - Goals and non-goals — states what is in scope and explicitly what is out of scope.
+      - Target users / personas — identifies who the change is for.
+      - User stories or use cases — expressed in a clear, testable form.
+      - Acceptance criteria — explicit, verifiable, and testable (ideally Given/When/Then or a checklist).
+      - Functional requirements — the concrete behaviors the feature must implement.
+      - Non-functional requirements — performance, security, accessibility, localization, and privacy expectations where relevant.
+      - User flows — the primary flow plus alternate and error flows.
+      - UI / UX references — links to designs (Figma) or screenshots, following Material Design guidelines where relevant, with all required screen states (loading, success, empty, error, permission-denied, offline).
+      - Data and API contract — request/response shapes, field nullability, pagination, and error codes where the feature is data-driven.
+      - Edge cases and constraints — enumerated explicitly.
+      - Analytics and success metrics — events to track and how success is measured, where the product instruments features.
+      - Rollout / feature-flag / migration plan — where applicable (e.g. staged Play Store rollout, remote config flag).
+      - Dependencies and risks — upstream/downstream dependencies and known risks.
+      - Version and ownership — PRD has an owner and a version/last-updated marker so it is compatible with the current implementation.
+
+  - id: prd_pr_alignment
+    title: PR Implementation vs PRD Alignment
+    description: The code in the PR must match what the PRD specifies.
+    checks:
+      - The implemented behavior satisfies each PRD acceptance criterion.
+      - All screen states described in the PRD (loading, success, empty, error, permission-denied, offline) are implemented.
+      - The implemented user flow matches the PRD primary flow, and alternate/error flows are handled.
+      - Data mapping and API usage match the PRD/API contract (field names, nullability, pagination, error handling).
+      - Non-functional requirements from the PRD (performance, security, accessibility, localization, privacy) are respected in the implementation.
+      - Analytics/events required by the PRD are implemented where the project instruments features.
+      - Any behavior present in the code but absent from the PRD is called out (scope creep).
+      - Any PRD requirement not implemented is called out (scope gap).
+
+  - id: prd_deviation_and_change_control
+    title: Deviation Handling and Change Control
+    description: Divergence from the PRD must be explicit and justified.
+    checks:
+      - Any deviation from the PRD (scope reduction, alternate approach, deferred behavior) is explicitly documented in the PR description with justification.
+      - Deferred items reference a follow-up ticket.
+      - If implementation forced a PRD change, the PR notes that the PRD was updated (with version bump) to stay compatible.
+      - Bug-fix PRs describe root cause, the fix, and how it maps to the reported issue.
+      - Enhancement PRs state the measurable improvement expected and how it will be validated.

@@ -1,0 +1,74 @@
+# Re-run behavior:
+#   * "Re-run all jobs" in the GitHub UI replays the original triggering event,
+#     so the pull_request steps below run again every time you click it.
+#   * Reopening a closed PR fires pull_request:reopened, which re-runs the review.
+#   * workflow_dispatch lets you trigger the review manually from the Actions tab
+#     by entering the PR number.
+on:
+  pull_request:
+    types: [opened, reopened, synchronize, ready_for_review, edited]
+    branches:
+      - main
+      - master
+      - dev
+  issue_comment:
+  workflow_dispatch:
+    inputs:
+      pr_number:
+        description: "PR number to review (manual run)"
+        required: true
+        type: string
+
+# Avoid piling up runs on rapid pushes; the newest run wins.
+concurrency:
+  group: android-pr-agent-${{ github.event.pull_request.number || github.event.inputs.pr_number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  android_pr_agent_job:
+    if: ${{ github.event.sender.type != 'Bot' }}
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+      pull-requests: write
+      contents: read
+    name: Run Android PR compliance review agent
+    steps:
+      - name: Checkout PR code
+        if: ${{ github.event_name == 'pull_request' || github.event_name == 'workflow_dispatch' }}
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Qodo PR Agent review
+        id: pragent
+        if: ${{ github.event_name == 'pull_request' || github.event_name == 'issue_comment' }}
+        uses: qodo-ai/pr-agent@main
+        env:
+          OPENAI_KEY: ${{ secrets.OPENAI_KEY }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          config.model: gpt-4.1-mini
+          config.fallback_models: '["gpt-4.1-mini"]'
+          github_action_config.auto_review: true
+          github_action_config.auto_describe: true
+          github_action_config.auto_improve: false
+
+      - name: Setup Node for Android compliance review
+        if: ${{ github.event_name == 'pull_request' || github.event_name == 'workflow_dispatch' }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Post Android compliance review comment
+        if: ${{ github.event_name == 'pull_request' || github.event_name == 'workflow_dispatch' }}
+        env:
+          OPENAI_KEY: ${{ secrets.OPENAI_KEY }}
+          OPENAI_MODEL: gpt-4.1-mini
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          PR_NUMBER: ${{ github.event.pull_request.number || github.event.inputs.pr_number }}
+          PR_TITLE: ${{ github.event.pull_request.title }}
+          PR_BODY: ${{ github.event.pull_request.body }}
+          BASE_REF: ${{ github.event.pull_request.base.ref }}
+          # MAX_PR_LINES: 1500   # uncomment to override the default PR-size guideline
+        run: node scripts/android_pr_review.js

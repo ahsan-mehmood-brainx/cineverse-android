@@ -16,6 +16,9 @@
     <string name="state_error">Something went wrong</string>
     <string name="action_retry">Retry</string>
 
+    <!-- Movie detail screen -->
+    <string name="movie_meta_format">%1$s ★ · %2$s · %3$s</string>
+
     <!-- Navigation drawer -->
     <string name="nav_drawer_open">Open navigation drawer</string>
     <string name="nav_drawer_close">Close navigation drawer</string>

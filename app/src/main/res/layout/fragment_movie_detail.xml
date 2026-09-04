@@ -6,8 +6,11 @@
     tools:context=".ui.detail.MovieDetailFragment">
 
     <ScrollView
+        android:id="@+id/contentScrollView"
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="match_parent"
+        android:visibility="gone"
+        tools:visibility="visible">
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -25,14 +28,24 @@
                 android:id="@+id/titleTextView"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_margin="16dp"
+                android:layout_marginHorizontal="16dp"
+                android:layout_marginTop="16dp"
                 android:textAppearance="?attr/textAppearanceHeadlineSmall" />
+
+            <TextView
+                android:id="@+id/metaTextView"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginHorizontal="16dp"
+                android:layout_marginTop="4dp"
+                android:textAppearance="?attr/textAppearanceBodySmall"
+                android:textColor="?attr/colorOnSurfaceVariant" />
 
             <TextView
                 android:id="@+id/overviewTextView"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginHorizontal="16dp"
+                android:layout_margin="16dp"
                 android:textAppearance="?attr/textAppearanceBodyMedium" />
 
         </LinearLayout>
@@ -47,24 +60,6 @@
         android:layout_gravity="center"
         android:visibility="gone"
         tools:visibility="visible" />
-
-    <LinearLayout
-        android:id="@+id/emptyStateLayout"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center"
-        android:gravity="center"
-        android:orientation="vertical"
-        android:visibility="gone">
-
-        <TextView
-            android:id="@+id/emptyStateText"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/state_empty"
-            android:textAppearance="?attr/textAppearanceBodyLarge" />
-
-    </LinearLayout>
 
     <LinearLayout
         android:id="@+id/errorStateLayout"

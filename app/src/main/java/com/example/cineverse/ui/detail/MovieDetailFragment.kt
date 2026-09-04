@@ -6,11 +6,15 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
+import coil.load
+import com.example.cineverse.R
 import com.example.cineverse.databinding.FragmentMovieDetailBinding
+import com.example.cineverse.domain.model.Movie
 import com.example.cineverse.ui.common.extension.setVisible
 import com.example.cineverse.util.Resource
 import com.example.cineverse.util.collectOnStarted
 import dagger.hilt.android.AndroidEntryPoint
+import java.util.Locale
 
 @AndroidEntryPoint
 class MovieDetailFragment : Fragment() {
@@ -32,10 +36,34 @@ class MovieDetailFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        viewModel.uiState.collectOnStarted(this) { state ->
-            binding.progressBar.setVisible(state is Resource.Loading)
-            binding.errorStateLayout.setVisible(state is Resource.Error)
+        binding.retryButton.setOnClickListener { viewModel.retry() }
+
+        viewModel.uiState.collectOnStarted(this) { state -> render(state) }
+    }
+
+    private fun render(state: Resource<Movie>) {
+        binding.progressBar.setVisible(state is Resource.Loading)
+        binding.errorStateLayout.setVisible(state is Resource.Error)
+        binding.contentScrollView.setVisible(state is Resource.Success)
+
+        if (state is Resource.Success) {
+            bindMovie(state.data)
         }
+    }
+
+    private fun bindMovie(movie: Movie) {
+        binding.posterImageView.load(movie.posterUrl) {
+            placeholder(R.drawable.ic_movie_placeholder)
+            error(R.drawable.ic_movie_placeholder)
+        }
+        binding.titleTextView.text = movie.title
+        binding.metaTextView.text = getString(
+            R.string.movie_meta_format,
+            String.format(Locale.getDefault(), "%.1f", movie.rating),
+            movie.releaseDate,
+            movie.genre
+        )
+        binding.overviewTextView.text = movie.overview
     }
 
     override fun onDestroyView() {

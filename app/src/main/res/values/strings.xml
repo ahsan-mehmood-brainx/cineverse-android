@@ -32,4 +32,30 @@
     <string name="section_popular">Popular Movies</string>
     <string name="section_top_rated">Top Rated</string>
     <string name="section_genres">Genres</string>
+
+    <!-- Favorites -->
+    <string name="action_toggle_favorite">Toggle favorite</string>
+    <string name="action_add_favorite">Add to favorites</string>
+    <string name="action_remove_favorite">Remove from favorites</string>
+    <string name="remove_favorite_title">Remove from Favorites?</string>
+    <string name="remove_favorite_message">\"%1$s\" will be removed from your favorites.</string>
+    <string name="action_remove">Remove</string>
+    <string name="action_cancel">Cancel</string>
+
+    <!-- Profile -->
+    <string name="action_edit_profile">Edit Profile</string>
+    <string name="action_save">Save</string>
+    <string name="profile_name_placeholder">Add your name</string>
+    <string name="profile_bio_placeholder">Tell us what you love to watch.</string>
+    <string name="profile_name_hint">Name</string>
+    <string name="profile_bio_hint">Bio</string>
+    <string name="profile_error_blank_name">Name can\'t be empty</string>
+    <string name="profile_error_name_too_long">Keep it under %1$d characters</string>
+    <string name="profile_error_bio_too_long">Keep it under %1$d characters</string>
+
+    <!-- Notifications -->
+    <string name="notification_channel_name">Popular movies</string>
+    <string name="notification_channel_description">Alerts when a new movie tops the Popular list</string>
+    <string name="notification_new_popular_title">New #1 on Popular</string>
+    <string name="notification_new_popular_body">\"%1$s\" is now the most popular movie on CineVerse.</string>
 </resources>

@@ -1,5 +1,6 @@
 package com.example.cineverse.data.mapper
 
+import com.example.cineverse.data.local.entity.FavoriteMovieEntity
 import com.example.cineverse.data.remote.dto.MovieDetailDto
 import com.example.cineverse.data.remote.dto.MovieDto
 import com.example.cineverse.domain.model.Movie
@@ -26,3 +27,24 @@ fun MovieDetailDto.toDomain(): Movie = Movie(
 )
 
 private fun String.toFullPosterUrl(): String = Constants.TMDB_IMAGE_BASE_URL + removePrefix("/")
+
+fun FavoriteMovieEntity.toDomain(): Movie = Movie(
+    id = id,
+    title = title,
+    posterUrl = posterUrl,
+    rating = rating,
+    releaseDate = releaseDate,
+    genre = genre,
+    overview = overview
+)
+
+fun Movie.toFavoriteEntity(addedAtEpochMillis: Long): FavoriteMovieEntity = FavoriteMovieEntity(
+    id = id,
+    title = title,
+    posterUrl = posterUrl,
+    rating = rating,
+    releaseDate = releaseDate,
+    genre = genre,
+    overview = overview,
+    addedAtEpochMillis = addedAtEpochMillis
+)

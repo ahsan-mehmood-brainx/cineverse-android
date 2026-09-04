@@ -1,13 +1,19 @@
 package com.example.cineverse.data.repository
 
+import com.example.cineverse.data.local.dao.FavoriteMovieDao
+import com.example.cineverse.data.local.entity.FavoriteMovieEntity
 import com.example.cineverse.data.remote.api.TMDBApi
 import com.example.cineverse.data.remote.dto.GenreDto
 import com.example.cineverse.data.remote.dto.GenresResponseDto
 import com.example.cineverse.data.remote.dto.MovieDetailDto
 import com.example.cineverse.data.remote.dto.MovieDto
 import com.example.cineverse.data.remote.dto.MoviesResponseDto
+import com.example.cineverse.domain.model.Movie
 import com.example.cineverse.util.Resource
 import com.google.common.truth.Truth.assertThat
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.test.runTest
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.ResponseBody.Companion.toResponseBody
@@ -24,7 +30,24 @@ import java.io.IOException
 class MovieRepositoryImplTest {
 
     private val api: TMDBApi = mock()
-    private val repository = MovieRepositoryImpl(api)
+
+    /** In-memory fake so favorites tests exercise real insert/delete/query semantics. */
+    private class FakeFavoriteMovieDao : FavoriteMovieDao {
+        val state = MutableStateFlow<List<FavoriteMovieEntity>>(emptyList())
+
+        override fun observeAll() = state
+        override fun observeIsFavorite(movieId: Int) = state.map { list -> list.any { it.id == movieId } }
+        override suspend fun insert(entity: FavoriteMovieEntity) {
+            state.value = state.value.filterNot { it.id == entity.id } + entity
+        }
+
+        override suspend fun deleteById(movieId: Int) {
+            state.value = state.value.filterNot { it.id == movieId }
+        }
+    }
+
+    private val favoriteMovieDao = FakeFavoriteMovieDao()
+    private val repository = MovieRepositoryImpl(api, favoriteMovieDao)
 
     private val genresResponse = GenresResponseDto(
         genres = listOf(GenreDto(1, "Action"), GenreDto(5, "Sci-Fi"))
@@ -105,5 +128,48 @@ class MovieRepositoryImplTest {
 
         assertThat(result).isInstanceOf(Resource.Success::class.java)
         assertThat((result as Resource.Success).data.genre).isEqualTo("Sci-Fi")
+    }
+
+    @Test
+    fun addFavorite_thenObserveFavorites_containsMovie() = runTest {
+        val movie = Movie(1, "Dune", null, 8.3, "2021-10-22", "Sci-Fi", "A noble heir.")
+
+        repository.addFavorite(movie)
+
+        val favorites = repository.observeFavorites().first()
+        assertThat(favorites).containsExactly(movie)
+    }
+
+    @Test
+    fun addFavorite_sameMovieTwice_doesNotDuplicate() = runTest {
+        val movie = Movie(1, "Dune", null, 8.3, "2021-10-22", "Sci-Fi", "A noble heir.")
+
+        repository.addFavorite(movie)
+        repository.addFavorite(movie)
+
+        assertThat(repository.observeFavorites().first()).hasSize(1)
+    }
+
+    @Test
+    fun removeFavorite_removesFromFavorites() = runTest {
+        val movie = Movie(1, "Dune", null, 8.3, "2021-10-22", "Sci-Fi", "A noble heir.")
+        repository.addFavorite(movie)
+
+        repository.removeFavorite(movie.id)
+
+        assertThat(repository.observeFavorites().first()).isEmpty()
+    }
+
+    @Test
+    fun observeIsFavorite_reflectsCurrentState() = runTest {
+        val movie = Movie(1, "Dune", null, 8.3, "2021-10-22", "Sci-Fi", "A noble heir.")
+
+        assertThat(repository.observeIsFavorite(movie.id).first()).isFalse()
+
+        repository.addFavorite(movie)
+        assertThat(repository.observeIsFavorite(movie.id).first()).isTrue()
+
+        repository.removeFavorite(movie.id)
+        assertThat(repository.observeIsFavorite(movie.id).first()).isFalse()
     }
 }

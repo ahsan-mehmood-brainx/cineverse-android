@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import coil.load
@@ -37,8 +38,20 @@ class MovieDetailFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         binding.retryButton.setOnClickListener { viewModel.retry() }
+        binding.favoriteButton.setOnClickListener { viewModel.toggleFavorite() }
 
         viewModel.uiState.collectOnStarted(this) { state -> render(state) }
+        viewModel.isFavorite.collectOnStarted(this) { isFavorite -> renderFavoriteButton(isFavorite) }
+    }
+
+    private fun renderFavoriteButton(isFavorite: Boolean) {
+        val iconRes = if (isFavorite) R.drawable.ic_favorite_filled else R.drawable.ic_favorite_outline
+        val tintRes = if (isFavorite) R.color.favorite_heart_tint else R.color.bottom_nav_item_color
+        binding.favoriteButton.setImageResource(iconRes)
+        binding.favoriteButton.imageTintList = ContextCompat.getColorStateList(requireContext(), tintRes)
+        binding.favoriteButton.contentDescription = getString(
+            if (isFavorite) R.string.action_remove_favorite else R.string.action_add_favorite
+        )
     }
 
     private fun render(state: Resource<Movie>) {

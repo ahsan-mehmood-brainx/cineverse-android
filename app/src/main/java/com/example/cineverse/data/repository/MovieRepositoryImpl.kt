@@ -1,12 +1,16 @@
 package com.example.cineverse.data.repository
 
+import com.example.cineverse.data.local.dao.FavoriteMovieDao
 import com.example.cineverse.data.mapper.toDomain
+import com.example.cineverse.data.mapper.toFavoriteEntity
 import com.example.cineverse.data.remote.api.TMDBApi
 import com.example.cineverse.data.remote.dto.MovieDto
 import com.example.cineverse.domain.model.Genre
 import com.example.cineverse.domain.model.Movie
 import com.example.cineverse.domain.repository.MovieRepository
 import com.example.cineverse.util.Resource
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import retrofit2.HttpException
@@ -16,7 +20,8 @@ import javax.inject.Singleton
 
 @Singleton
 class MovieRepositoryImpl @Inject constructor(
-    private val api: TMDBApi
+    private val api: TMDBApi,
+    private val favoriteMovieDao: FavoriteMovieDao
 ) : MovieRepository {
 
     private val genreCacheMutex = Mutex()
@@ -52,6 +57,20 @@ class MovieRepositoryImpl @Inject constructor(
 
     override suspend fun getMovieDetail(movieId: Int): Resource<Movie> = safeCall {
         api.getMovieDetail(movieId).toDomain()
+    }
+
+    override fun observeFavorites(): Flow<List<Movie>> =
+        favoriteMovieDao.observeAll().map { entities -> entities.map { it.toDomain() } }
+
+    override fun observeIsFavorite(movieId: Int): Flow<Boolean> =
+        favoriteMovieDao.observeIsFavorite(movieId)
+
+    override suspend fun addFavorite(movie: Movie) {
+        favoriteMovieDao.insert(movie.toFavoriteEntity(addedAtEpochMillis = System.currentTimeMillis()))
+    }
+
+    override suspend fun removeFavorite(movieId: Int) {
+        favoriteMovieDao.deleteById(movieId)
     }
 
     private suspend fun List<MovieDto>.toDomainMovies(): List<Movie> {

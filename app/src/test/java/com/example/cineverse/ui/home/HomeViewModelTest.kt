@@ -57,6 +57,10 @@ class HomeViewModelTest {
         override suspend fun getGenres() = genreList
         override suspend fun searchMovies(query: String) = Resource.Success(emptyList<Movie>())
         override suspend fun getMovieDetail(movieId: Int) = Resource.Success(trendingMovies.first())
+        override fun observeFavorites() = throw NotImplementedError("unused in HomeViewModel")
+        override fun observeIsFavorite(movieId: Int) = throw NotImplementedError("unused in HomeViewModel")
+        override suspend fun addFavorite(movie: Movie) = throw NotImplementedError("unused in HomeViewModel")
+        override suspend fun removeFavorite(movieId: Int) = throw NotImplementedError("unused in HomeViewModel")
     }
 
     @Test

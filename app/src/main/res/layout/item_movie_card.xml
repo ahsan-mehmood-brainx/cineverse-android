@@ -19,14 +19,32 @@
         android:layout_height="wrap_content"
         android:orientation="vertical">
 
-        <com.google.android.material.imageview.ShapeableImageView
-            android:id="@+id/posterImage"
+        <FrameLayout
             android:layout_width="match_parent"
-            android:layout_height="195dp"
-            android:contentDescription="@null"
-            android:scaleType="centerCrop"
-            app:shapeAppearanceOverlay="@style/ShapeAppearanceOverlay.CineVerse.MovieCard"
-            tools:src="@drawable/ic_movie_placeholder" />
+            android:layout_height="195dp">
+
+            <com.google.android.material.imageview.ShapeableImageView
+                android:id="@+id/posterImage"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:contentDescription="@null"
+                android:scaleType="centerCrop"
+                app:shapeAppearanceOverlay="@style/ShapeAppearanceOverlay.CineVerse.MovieCard"
+                tools:src="@drawable/ic_movie_placeholder" />
+
+            <ImageView
+                android:id="@+id/favoriteButton"
+                android:layout_width="28dp"
+                android:layout_height="28dp"
+                android:layout_gravity="top|end"
+                android:layout_margin="6dp"
+                android:background="@drawable/bg_favorite_button_scrim"
+                android:contentDescription="@string/action_toggle_favorite"
+                android:padding="5dp"
+                app:srcCompat="@drawable/ic_favorite_outline"
+                app:tint="@color/white" />
+
+        </FrameLayout>
 
         <TextView
             android:id="@+id/titleText"

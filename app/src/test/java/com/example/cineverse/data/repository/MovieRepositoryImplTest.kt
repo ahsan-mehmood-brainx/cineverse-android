@@ -44,6 +44,10 @@ class MovieRepositoryImplTest {
         override suspend fun deleteById(movieId: Int) {
             state.value = state.value.filterNot { it.id == movieId }
         }
+
+        override suspend fun clearAll() {
+            state.value = emptyList()
+        }
     }
 
     private val favoriteMovieDao = FakeFavoriteMovieDao()
@@ -156,6 +160,16 @@ class MovieRepositoryImplTest {
         repository.addFavorite(movie)
 
         repository.removeFavorite(movie.id)
+
+        assertThat(repository.observeFavorites().first()).isEmpty()
+    }
+
+    @Test
+    fun clearFavorites_removesAllFromFavorites() = runTest {
+        repository.addFavorite(Movie(1, "Dune", null, 8.3, "2021-10-22", "Sci-Fi", "A noble heir."))
+        repository.addFavorite(Movie(2, "Arrival", null, 7.9, "2016-11-11", "Sci-Fi", "Language."))
+
+        repository.clearFavorites()
 
         assertThat(repository.observeFavorites().first()).isEmpty()
     }

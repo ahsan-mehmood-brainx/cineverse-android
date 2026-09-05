@@ -2,13 +2,17 @@ package com.example.cineverse.ui.home
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.cineverse.domain.model.Movie
 import com.example.cineverse.domain.repository.MovieRepository
 import com.example.cineverse.util.Resource
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -20,11 +24,25 @@ class HomeViewModel @Inject constructor(
     private val _uiState = MutableStateFlow<Resource<HomeUiState>>(Resource.Loading)
     val uiState: StateFlow<Resource<HomeUiState>> = _uiState.asStateFlow()
 
+    val favoriteIds: StateFlow<Set<Int>> = repository.observeFavorites()
+        .map { favorites -> favorites.map { it.id }.toSet() }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptySet())
+
     init {
         loadHome()
     }
 
     fun retry() = loadHome()
+
+    fun toggleFavorite(movie: Movie) {
+        viewModelScope.launch {
+            if (movie.id in favoriteIds.value) {
+                repository.removeFavorite(movie.id)
+            } else {
+                repository.addFavorite(movie)
+            }
+        }
+    }
 
     private fun loadHome() {
         viewModelScope.launch {

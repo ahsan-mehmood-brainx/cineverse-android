@@ -73,6 +73,10 @@ class MovieRepositoryImpl @Inject constructor(
         favoriteMovieDao.deleteById(movieId)
     }
 
+    override suspend fun clearFavorites() {
+        favoriteMovieDao.clearAll()
+    }
+
     private suspend fun List<MovieDto>.toDomainMovies(): List<Movie> {
         val genreNamesById = genreNamesById()
         return map { it.toDomain(genreNamesById) }

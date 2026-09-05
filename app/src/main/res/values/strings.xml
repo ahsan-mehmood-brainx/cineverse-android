@@ -18,6 +18,8 @@
 
     <!-- Movie detail screen -->
     <string name="movie_meta_format">%1$s ★ · %2$s · %3$s</string>
+    <string name="action_share">Share</string>
+    <string name="share_movie_text">Check out \"%1$s\" on CineVerse!</string>
 
     <!-- Navigation drawer -->
     <string name="nav_drawer_open">Open navigation drawer</string>
@@ -41,6 +43,9 @@
     <string name="remove_favorite_message">\"%1$s\" will be removed from your favorites.</string>
     <string name="action_remove">Remove</string>
     <string name="action_cancel">Cancel</string>
+    <string name="action_clear_all">Clear all</string>
+    <string name="clear_favorites_title">Clear all favorites?</string>
+    <string name="clear_favorites_message">All movies will be removed from your favorites. This can\'t be undone.</string>
 
     <!-- Profile -->
     <string name="action_edit_profile">Edit Profile</string>

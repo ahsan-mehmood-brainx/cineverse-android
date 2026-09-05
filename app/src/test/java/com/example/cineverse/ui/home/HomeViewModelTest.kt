@@ -8,6 +8,7 @@ import com.example.cineverse.util.Resource
 import com.google.common.truth.Truth.assertThat
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.resetMain
@@ -57,10 +58,11 @@ class HomeViewModelTest {
         override suspend fun getGenres() = genreList
         override suspend fun searchMovies(query: String) = Resource.Success(emptyList<Movie>())
         override suspend fun getMovieDetail(movieId: Int) = Resource.Success(trendingMovies.first())
-        override fun observeFavorites() = throw NotImplementedError("unused in HomeViewModel")
+        override fun observeFavorites() = flowOf(emptyList<Movie>())
         override fun observeIsFavorite(movieId: Int) = throw NotImplementedError("unused in HomeViewModel")
         override suspend fun addFavorite(movie: Movie) = throw NotImplementedError("unused in HomeViewModel")
         override suspend fun removeFavorite(movieId: Int) = throw NotImplementedError("unused in HomeViewModel")
+        override suspend fun clearFavorites() = throw NotImplementedError("unused in HomeViewModel")
     }
 
     @Test

@@ -45,6 +45,12 @@ class FavoritesViewModelTest {
             removedId = movieId
             favorites.value = favorites.value.filterNot { it.id == movieId }
         }
+
+        var clearedAll = false
+        override suspend fun clearFavorites() {
+            clearedAll = true
+            favorites.value = emptyList()
+        }
     }
 
     private lateinit var repository: FakeMovieRepository
@@ -105,5 +111,18 @@ class FavoritesViewModelTest {
 
         assertThat(viewModel.pendingRemoval.value).isNull()
         assertThat(repository.removedId).isNull()
+    }
+
+    @Test
+    fun clearAll_removesAllFavorites() = runTest(testDispatcher) {
+        repository.favorites.value = listOf(movie)
+        val viewModel = FavoritesViewModel(repository)
+        advanceUntilIdle()
+
+        viewModel.clearAll()
+        advanceUntilIdle()
+
+        assertThat(repository.clearedAll).isTrue()
+        assertThat(repository.favorites.value).isEmpty()
     }
 }

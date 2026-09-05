@@ -2,10 +2,15 @@ package com.example.cineverse.ui.favorites
 
 import android.os.Bundle
 import android.view.LayoutInflater
+import android.view.Menu
+import android.view.MenuInflater
+import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.view.MenuProvider
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.Lifecycle
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -27,10 +32,12 @@ class FavoritesFragment : Fragment() {
     private val binding get() = _binding!!
 
     private val viewModel: FavoritesViewModel by viewModels()
-    private val adapter = MovieAdapter(::openMovieDetail)
+    private val adapter = MovieAdapter(::openMovieDetail, ::unfavorite)
 
     private var confirmRemovalDialog: androidx.appcompat.app.AlertDialog? = null
+    private var confirmClearAllDialog: androidx.appcompat.app.AlertDialog? = null
     private var swipedPosition = RecyclerView.NO_POSITION
+    private var hasFavorites = false
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -44,6 +51,7 @@ class FavoritesFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        setupToolbarMenu()
         binding.recyclerView.layoutManager = GridLayoutManager(requireContext(), SPAN_COUNT)
         binding.recyclerView.adapter = adapter
 
@@ -61,6 +69,36 @@ class FavoritesFragment : Fragment() {
         viewModel.pendingRemoval.collectOnStarted(this) { movie -> renderPendingRemoval(movie) }
     }
 
+    private fun setupToolbarMenu() {
+        requireActivity().addMenuProvider(object : MenuProvider {
+            override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
+                menuInflater.inflate(R.menu.favorites_toolbar_menu, menu)
+            }
+
+            override fun onPrepareMenu(menu: Menu) {
+                menu.findItem(R.id.action_clear_all)?.isEnabled = hasFavorites
+            }
+
+            override fun onMenuItemSelected(menuItem: MenuItem): Boolean =
+                when (menuItem.itemId) {
+                    R.id.action_clear_all -> {
+                        confirmClearAll()
+                        true
+                    }
+                    else -> false
+                }
+        }, viewLifecycleOwner, Lifecycle.State.RESUMED)
+    }
+
+    private fun confirmClearAll() {
+        confirmClearAllDialog = MaterialAlertDialogBuilder(requireContext())
+            .setTitle(R.string.clear_favorites_title)
+            .setMessage(R.string.clear_favorites_message)
+            .setPositiveButton(R.string.action_clear_all) { _, _ -> viewModel.clearAll() }
+            .setNegativeButton(R.string.action_cancel, null)
+            .show()
+    }
+
     private fun render(state: Resource<List<Movie>>) {
         binding.progressBar.setVisible(state is Resource.Loading)
         binding.errorStateLayout.setVisible(state is Resource.Error)
@@ -69,6 +107,13 @@ class FavoritesFragment : Fragment() {
 
         if (state is Resource.Success) {
             adapter.submitList(state.data)
+            adapter.setFavoriteIds(state.data.map { it.id }.toSet())
+
+            val hadFavorites = hasFavorites
+            hasFavorites = state.data.isNotEmpty()
+            if (hadFavorites != hasFavorites) {
+                requireActivity().invalidateMenu()
+            }
         }
     }
 
@@ -105,9 +150,17 @@ class FavoritesFragment : Fragment() {
         findNavController().navigate(FavoritesFragmentDirections.actionFavoritesToMovieDetail(movie.id))
     }
 
+    /** Routed through the same confirmation dialog as swipe-to-delete, since both remove a favorite. */
+    private fun unfavorite(movie: Movie) {
+        swipedPosition = adapter.currentList.indexOfFirst { it.id == movie.id }
+        viewModel.requestRemoval(movie)
+    }
+
     override fun onDestroyView() {
         super.onDestroyView()
         confirmRemovalDialog = null
+        confirmClearAllDialog?.dismiss()
+        confirmClearAllDialog = null
         _binding = null
     }
 

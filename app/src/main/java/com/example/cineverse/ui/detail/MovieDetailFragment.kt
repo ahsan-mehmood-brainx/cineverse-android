@@ -1,12 +1,18 @@
 package com.example.cineverse.ui.detail
 
+import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
+import android.view.Menu
+import android.view.MenuInflater
+import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import androidx.core.content.ContextCompat
+import androidx.core.view.MenuProvider
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.Lifecycle
 import coil.load
 import com.example.cineverse.R
 import com.example.cineverse.databinding.FragmentMovieDetailBinding
@@ -25,6 +31,9 @@ class MovieDetailFragment : Fragment() {
 
     private val viewModel: MovieDetailViewModel by viewModels()
 
+    /** Backs the Share toolbar action; only shareable once the movie has loaded. */
+    private var loadedMovie: Movie? = null
+
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -37,11 +46,42 @@ class MovieDetailFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        setupToolbarMenu()
         binding.retryButton.setOnClickListener { viewModel.retry() }
         binding.favoriteButton.setOnClickListener { viewModel.toggleFavorite() }
 
         viewModel.uiState.collectOnStarted(this) { state -> render(state) }
         viewModel.isFavorite.collectOnStarted(this) { isFavorite -> renderFavoriteButton(isFavorite) }
+    }
+
+    private fun setupToolbarMenu() {
+        requireActivity().addMenuProvider(object : MenuProvider {
+            override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
+                menuInflater.inflate(R.menu.movie_detail_toolbar_menu, menu)
+            }
+
+            override fun onPrepareMenu(menu: Menu) {
+                menu.findItem(R.id.action_share)?.isEnabled = loadedMovie != null
+            }
+
+            override fun onMenuItemSelected(menuItem: MenuItem): Boolean =
+                when (menuItem.itemId) {
+                    R.id.action_share -> {
+                        shareMovie()
+                        true
+                    }
+                    else -> false
+                }
+        }, viewLifecycleOwner, Lifecycle.State.RESUMED)
+    }
+
+    private fun shareMovie() {
+        val movie = loadedMovie ?: return
+        val shareIntent = Intent(Intent.ACTION_SEND).apply {
+            type = "text/plain"
+            putExtra(Intent.EXTRA_TEXT, getString(R.string.share_movie_text, movie.title))
+        }
+        startActivity(Intent.createChooser(shareIntent, getString(R.string.action_share)))
     }
 
     private fun renderFavoriteButton(isFavorite: Boolean) {
@@ -61,6 +101,12 @@ class MovieDetailFragment : Fragment() {
 
         if (state is Resource.Success) {
             bindMovie(state.data)
+        }
+
+        val hadMovie = loadedMovie != null
+        loadedMovie = (state as? Resource.Success)?.data
+        if (hadMovie != (loadedMovie != null)) {
+            requireActivity().invalidateMenu()
         }
     }
 

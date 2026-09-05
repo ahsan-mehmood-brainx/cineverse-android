@@ -42,4 +42,8 @@ class FavoritesViewModel @Inject constructor(
     fun cancelPendingRemoval() {
         _pendingRemoval.value = null
     }
+
+    fun clearAll() {
+        viewModelScope.launch { repository.clearFavorites() }
+    }
 }

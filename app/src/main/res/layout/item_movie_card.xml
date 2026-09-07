@@ -3,15 +3,15 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="130dp"
+    android:layout_width="@dimen/movie_card_width"
     android:layout_height="wrap_content"
-    android:layout_marginEnd="12dp"
+    android:layout_marginEnd="@dimen/spacing_12"
     android:checkable="false"
     android:clickable="true"
     android:focusable="true"
     app:cardBackgroundColor="?attr/colorSurface"
-    app:cardCornerRadius="12dp"
-    app:cardElevation="3dp"
+    app:cardCornerRadius="@dimen/movie_card_corner_radius"
+    app:cardElevation="@dimen/movie_card_elevation"
     app:strokeWidth="0dp">
 
     <LinearLayout
@@ -19,22 +19,40 @@
         android:layout_height="wrap_content"
         android:orientation="vertical">
 
-        <com.google.android.material.imageview.ShapeableImageView
-            android:id="@+id/posterImage"
+        <FrameLayout
             android:layout_width="match_parent"
-            android:layout_height="195dp"
-            android:contentDescription="@null"
-            android:scaleType="centerCrop"
-            app:shapeAppearanceOverlay="@style/ShapeAppearanceOverlay.CineVerse.MovieCard"
-            tools:src="@drawable/ic_movie_placeholder" />
+            android:layout_height="@dimen/movie_card_poster_height">
+
+            <com.google.android.material.imageview.ShapeableImageView
+                android:id="@+id/posterImage"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:contentDescription="@null"
+                android:scaleType="centerCrop"
+                app:shapeAppearanceOverlay="@style/ShapeAppearanceOverlay.CineVerse.MovieCard"
+                tools:src="@drawable/ic_movie_placeholder" />
+
+            <ImageView
+                android:id="@+id/favoriteButton"
+                android:layout_width="@dimen/movie_card_favorite_button_size"
+                android:layout_height="@dimen/movie_card_favorite_button_size"
+                android:layout_gravity="top|end"
+                android:layout_margin="@dimen/movie_card_favorite_button_margin"
+                android:background="@drawable/bg_favorite_button_scrim"
+                android:contentDescription="@string/action_toggle_favorite"
+                android:padding="@dimen/movie_card_favorite_button_padding"
+                app:srcCompat="@drawable/ic_favorite_outline"
+                app:tint="@color/white" />
+
+        </FrameLayout>
 
         <TextView
             android:id="@+id/titleText"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginStart="8dp"
-            android:layout_marginTop="8dp"
-            android:layout_marginEnd="8dp"
+            android:layout_marginStart="@dimen/spacing_8"
+            android:layout_marginTop="@dimen/spacing_8"
+            android:layout_marginEnd="@dimen/spacing_8"
             android:ellipsize="end"
             android:maxLines="1"
             android:textAppearance="?attr/textAppearanceTitleSmall"
@@ -45,10 +63,10 @@
             android:id="@+id/ratingText"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginStart="8dp"
-            android:layout_marginTop="4dp"
-            android:layout_marginBottom="10dp"
-            android:drawablePadding="4dp"
+            android:layout_marginStart="@dimen/spacing_8"
+            android:layout_marginTop="@dimen/spacing_4"
+            android:layout_marginBottom="@dimen/spacing_10"
+            android:drawablePadding="@dimen/spacing_4"
             android:gravity="center_vertical"
             android:textAppearance="?attr/textAppearanceBodySmall"
             android:textColor="?attr/colorOnSurfaceVariant"

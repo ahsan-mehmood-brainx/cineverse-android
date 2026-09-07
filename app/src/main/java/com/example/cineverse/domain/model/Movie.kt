@@ -1,9 +1,6 @@
 package com.example.cineverse.domain.model
 
-/**
- * UI-facing movie model. Currently populated from [com.example.cineverse.ui.home.HomeMockData];
- * once the TMDB repository lands, a mapper in data/mapper will build this from the remote DTO.
- */
+/** UI-facing movie model, built from remote DTOs by the mappers in data/mapper. */
 data class Movie(
     val id: Int,
     val title: String,

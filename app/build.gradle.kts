@@ -55,6 +55,11 @@ android {
         viewBinding = true
         buildConfig = true
     }
+    sourceSets {
+        getByName("androidTest") {
+            assets.srcDirs("$projectDir/schemas")
+        }
+    }
 }
 
 ksp {
@@ -123,4 +128,5 @@ dependencies {
     androidTestImplementation(libs.mockito.android)
     androidTestImplementation(libs.google.truth)
     androidTestImplementation(libs.hilt.testing)
+    androidTestImplementation(libs.room.testing)
 }

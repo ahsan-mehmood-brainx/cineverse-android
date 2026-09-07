@@ -11,7 +11,9 @@ import androidx.core.view.MenuProvider
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
+import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.fragment.findNavController
+import androidx.navigation.navOptions
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.cineverse.R
@@ -32,9 +34,9 @@ class HomeFragment : Fragment() {
 
     private val viewModel: HomeViewModel by viewModels()
 
-    private val trendingAdapter = MovieAdapter(::openMovieDetail)
-    private val popularAdapter = MovieAdapter(::openMovieDetail)
-    private val topRatedAdapter = MovieAdapter(::openMovieDetail)
+    private val trendingAdapter = MovieAdapter(::openMovieDetail, ::toggleFavorite)
+    private val popularAdapter = MovieAdapter(::openMovieDetail, ::toggleFavorite)
+    private val topRatedAdapter = MovieAdapter(::openMovieDetail, ::toggleFavorite)
     private val genreAdapter = GenreAdapter()
 
     override fun onCreateView(
@@ -59,6 +61,13 @@ class HomeFragment : Fragment() {
         binding.retryButton.setOnClickListener { viewModel.retry() }
 
         viewModel.uiState.collectOnStarted(this) { state -> render(state) }
+        viewModel.favoriteIds.collectOnStarted(this) { ids -> renderFavoriteIds(ids) }
+    }
+
+    private fun renderFavoriteIds(ids: Set<Int>) {
+        trendingAdapter.setFavoriteIds(ids)
+        popularAdapter.setFavoriteIds(ids)
+        topRatedAdapter.setFavoriteIds(ids)
     }
 
     private fun setupToolbarMenu() {
@@ -70,7 +79,21 @@ class HomeFragment : Fragment() {
             override fun onMenuItemSelected(menuItem: MenuItem): Boolean =
                 when (menuItem.itemId) {
                     R.id.action_search -> {
-                        findNavController().navigate(HomeFragmentDirections.actionHomeToSearch())
+                        // Search is also a bottom-nav tab, so switch to it the same way the bottom
+                        // nav does (popUpTo the start destination with saveState/restoreState).
+                        // A plain navigate() here would leave an extra back stack entry that
+                        // corrupts NavController's saved-state map for the Home tab.
+                        val navController = findNavController()
+                        navController.navigate(
+                            HomeFragmentDirections.actionHomeToSearch(),
+                            navOptions {
+                                launchSingleTop = true
+                                restoreState = true
+                                popUpTo(navController.graph.findStartDestination().id) {
+                                    saveState = true
+                                }
+                            }
+                        )
                         true
                     }
                     else -> false
@@ -111,6 +134,10 @@ class HomeFragment : Fragment() {
 
     private fun openMovieDetail(movie: Movie) {
         findNavController().navigate(HomeFragmentDirections.actionHomeToMovieDetail(movie.id))
+    }
+
+    private fun toggleFavorite(movie: Movie) {
+        viewModel.toggleFavorite(movie)
     }
 
     override fun onDestroyView() {

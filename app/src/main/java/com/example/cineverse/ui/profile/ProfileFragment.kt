@@ -6,11 +6,15 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
+import coil.load
+import com.example.cineverse.R
 import com.example.cineverse.databinding.FragmentProfileBinding
+import com.example.cineverse.domain.model.Profile
 import com.example.cineverse.ui.common.extension.setVisible
 import com.example.cineverse.util.Resource
 import com.example.cineverse.util.collectOnStarted
 import dagger.hilt.android.AndroidEntryPoint
+import java.util.Locale
 
 @AndroidEntryPoint
 class ProfileFragment : Fragment() {
@@ -32,10 +36,45 @@ class ProfileFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        viewModel.uiState.collectOnStarted(this) { state ->
-            binding.progressBar.setVisible(state is Resource.Loading)
-            binding.errorStateLayout.setVisible(state is Resource.Error)
+        binding.editProfileButton.setOnClickListener {
+            EditProfileBottomSheetFragment().show(childFragmentManager, EditProfileBottomSheetFragment.TAG)
         }
+
+        viewModel.uiState.collectOnStarted(this) { state -> render(state) }
+    }
+
+    private fun render(state: Resource<Profile>) {
+        binding.progressBar.setVisible(state is Resource.Loading)
+        binding.errorStateLayout.setVisible(state is Resource.Error)
+        binding.contentScrollView.setVisible(state is Resource.Success)
+
+        if (state is Resource.Success) {
+            bindProfile(state.data)
+        }
+    }
+
+    private fun bindProfile(profile: Profile) {
+        val hasName = profile.displayName.isNotBlank()
+        val hasImage = !profile.profileImageUri.isNullOrBlank()
+
+        binding.avatarImage.setVisible(hasImage)
+        binding.avatarInitialText.setVisible(!hasImage)
+        if (hasImage) {
+            binding.avatarImage.load(profile.profileImageUri)
+        } else {
+            binding.avatarInitialText.text = if (hasName) {
+                profile.displayName.trim().first().uppercase(Locale.getDefault())
+            } else {
+                "?"
+            }
+        }
+
+        binding.displayNameText.text = if (hasName) profile.displayName else getString(R.string.profile_name_placeholder)
+        binding.usernameText.text = "@${profile.username}"
+        binding.usernameText.setVisible(profile.username.isNotBlank())
+        binding.emailText.text = profile.email
+        binding.emailText.setVisible(profile.email.isNotBlank())
+        binding.bioText.text = profile.bio.ifBlank { getString(R.string.profile_bio_placeholder) }
     }
 
     override fun onDestroyView() {

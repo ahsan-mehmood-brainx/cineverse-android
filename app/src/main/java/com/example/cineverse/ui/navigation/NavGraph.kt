@@ -1,6 +1,7 @@
 package com.example.cineverse.ui.navigation
 
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.view.isVisible
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.navigation.NavController
 import androidx.navigation.ui.AppBarConfiguration
@@ -30,5 +31,12 @@ fun AppCompatActivity.setupAppNavigation(
     val appBarConfiguration = AppBarConfiguration(topLevelDestinations, drawerLayout)
     navigationView.setupWithNavController(navController)
     bottomNavigationView.setupWithNavController(navController)
+
+    // Keep the bottom tab bar reserved for the top-level screens; detail screens reached by
+    // drilling in (e.g. movie detail) should feel like a full-screen destination, not a tab.
+    navController.addOnDestinationChangedListener { _, destination, _ ->
+        bottomNavigationView.isVisible = destination.id in topLevelDestinations
+    }
+
     return appBarConfiguration
 }

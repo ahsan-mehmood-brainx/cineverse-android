@@ -25,4 +25,7 @@
     <!-- Rating star tint — kept identical in light/dark since it reads as a fixed
          "gold star" brand color rather than theme-dependent text/surface content. -->
     <color name="rating_star">#FFFFC107</color>
+
+    <!-- Favorite heart tint — kept identical in light/dark for the same reason as rating_star. -->
+    <color name="favorite_heart_tint">#FFE53935</color>
 </resources>

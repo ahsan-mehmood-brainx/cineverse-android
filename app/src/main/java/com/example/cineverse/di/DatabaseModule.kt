@@ -4,7 +4,9 @@ import android.content.Context
 import androidx.room.Room
 import com.example.cineverse.data.local.MovieDatabase
 import com.example.cineverse.data.local.dao.FavoriteMovieDao
+import com.example.cineverse.data.local.dao.MovieCacheDao
 import com.example.cineverse.data.local.dao.ProfileDao
+import com.example.cineverse.data.local.migration.MIGRATION_1_2
 import com.example.cineverse.util.Constants
 import dagger.Module
 import dagger.Provides
@@ -20,11 +22,16 @@ object DatabaseModule {
     @Provides
     @Singleton
     fun provideMovieDatabase(@ApplicationContext context: Context): MovieDatabase =
-        Room.databaseBuilder(context, MovieDatabase::class.java, Constants.DATABASE_NAME).build()
+        Room.databaseBuilder(context, MovieDatabase::class.java, Constants.DATABASE_NAME)
+            .addMigrations(MIGRATION_1_2)
+            .build()
 
     @Provides
     fun provideFavoriteMovieDao(database: MovieDatabase): FavoriteMovieDao = database.favoriteMovieDao()
 
     @Provides
     fun provideProfileDao(database: MovieDatabase): ProfileDao = database.profileDao()
+
+    @Provides
+    fun provideMovieCacheDao(database: MovieDatabase): MovieCacheDao = database.movieCacheDao()
 }

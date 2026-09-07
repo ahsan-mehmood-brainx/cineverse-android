@@ -1,5 +1,6 @@
 package com.example.cineverse.data.mapper
 
+import com.example.cineverse.data.local.entity.CachedMovieEntity
 import com.example.cineverse.data.local.entity.FavoriteMovieEntity
 import com.example.cineverse.data.remote.dto.MovieDetailDto
 import com.example.cineverse.data.remote.dto.MovieDto
@@ -47,4 +48,26 @@ fun Movie.toFavoriteEntity(addedAtEpochMillis: Long): FavoriteMovieEntity = Favo
     genre = genre,
     overview = overview,
     addedAtEpochMillis = addedAtEpochMillis
+)
+
+fun CachedMovieEntity.toDomain(): Movie = Movie(
+    id = id,
+    title = title,
+    posterUrl = posterUrl,
+    rating = rating,
+    releaseDate = releaseDate,
+    genre = genre,
+    overview = overview
+)
+
+fun Movie.toCachedEntity(category: String, position: Int): CachedMovieEntity = CachedMovieEntity(
+    category = category,
+    id = id,
+    position = position,
+    title = title,
+    posterUrl = posterUrl,
+    rating = rating,
+    releaseDate = releaseDate,
+    genre = genre,
+    overview = overview
 )

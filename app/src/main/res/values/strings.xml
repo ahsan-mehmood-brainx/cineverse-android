@@ -53,10 +53,17 @@
     <string name="profile_name_placeholder">Add your name</string>
     <string name="profile_bio_placeholder">Tell us what you love to watch.</string>
     <string name="profile_name_hint">Name</string>
+    <string name="profile_username_hint">Username</string>
+    <string name="profile_email_hint">Email</string>
     <string name="profile_bio_hint">Bio</string>
     <string name="profile_error_blank_name">Name can\'t be empty</string>
     <string name="profile_error_name_too_long">Keep it under %1$d characters</string>
+    <string name="profile_error_blank_username">Username can\'t be empty</string>
+    <string name="profile_error_username_too_long">Keep it under %1$d characters</string>
+    <string name="profile_error_blank_email">Email can\'t be empty</string>
+    <string name="profile_error_invalid_email">Enter a valid email address</string>
     <string name="profile_error_bio_too_long">Keep it under %1$d characters</string>
+    <string name="action_change_photo">Change photo</string>
 
     <!-- Notifications -->
     <string name="notification_channel_name">Popular movies</string>

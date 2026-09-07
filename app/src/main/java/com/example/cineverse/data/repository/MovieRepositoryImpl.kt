@@ -1,6 +1,8 @@
 package com.example.cineverse.data.repository
 
 import com.example.cineverse.data.local.dao.FavoriteMovieDao
+import com.example.cineverse.data.local.dao.MovieCacheDao
+import com.example.cineverse.data.mapper.toCachedEntity
 import com.example.cineverse.data.mapper.toDomain
 import com.example.cineverse.data.mapper.toFavoriteEntity
 import com.example.cineverse.data.remote.api.TMDBApi
@@ -21,31 +23,27 @@ import javax.inject.Singleton
 @Singleton
 class MovieRepositoryImpl @Inject constructor(
     private val api: TMDBApi,
-    private val favoriteMovieDao: FavoriteMovieDao
+    private val favoriteMovieDao: FavoriteMovieDao,
+    private val movieCacheDao: MovieCacheDao
 ) : MovieRepository {
 
     private val genreCacheMutex = Mutex()
     private var cachedGenreNamesById: Map<Int, String>? = null
 
-    override suspend fun getTrendingMovies(): Resource<List<Movie>> = safeCall {
-        api.getTrendingMovies().results.toDomainMovies()
-    }
+    override suspend fun getTrendingMovies(): Resource<List<Movie>> =
+        cachedListCall(CATEGORY_TRENDING) { api.getTrendingMovies().results }
 
-    override suspend fun getPopularMovies(): Resource<List<Movie>> = safeCall {
-        api.getPopularMovies().results.toDomainMovies()
-    }
+    override suspend fun getPopularMovies(): Resource<List<Movie>> =
+        cachedListCall(CATEGORY_POPULAR) { api.getPopularMovies().results }
 
-    override suspend fun getTopRatedMovies(): Resource<List<Movie>> = safeCall {
-        api.getTopRatedMovies().results.toDomainMovies()
-    }
+    override suspend fun getTopRatedMovies(): Resource<List<Movie>> =
+        cachedListCall(CATEGORY_TOP_RATED) { api.getTopRatedMovies().results }
 
-    override suspend fun getNowPlayingMovies(): Resource<List<Movie>> = safeCall {
-        api.getNowPlayingMovies().results.toDomainMovies()
-    }
+    override suspend fun getNowPlayingMovies(): Resource<List<Movie>> =
+        cachedListCall(CATEGORY_NOW_PLAYING) { api.getNowPlayingMovies().results }
 
-    override suspend fun getUpcomingMovies(): Resource<List<Movie>> = safeCall {
-        api.getUpcomingMovies().results.toDomainMovies()
-    }
+    override suspend fun getUpcomingMovies(): Resource<List<Movie>> =
+        cachedListCall(CATEGORY_UPCOMING) { api.getUpcomingMovies().results }
 
     override suspend fun getGenres(): Resource<List<Genre>> = safeCall {
         genreNamesById().map { (id, name) -> Genre(id, name) }
@@ -99,5 +97,39 @@ class MovieRepositoryImpl @Inject constructor(
         Resource.Error("Something went wrong (code ${e.code()}).", e)
     } catch (e: Exception) {
         Resource.Error(e.message ?: "Unexpected error.", e)
+    }
+
+    /**
+     * Fetches a movie-list feed live and refreshes its Room cache for [category] on success. If
+     * the request can't even reach the server (offline), falls back to whatever was last cached
+     * for that category so the list still renders instead of showing an error.
+     */
+    private suspend fun cachedListCall(
+        category: String,
+        fetch: suspend () -> List<MovieDto>
+    ): Resource<List<Movie>> = try {
+        val movies = fetch().toDomainMovies()
+        movieCacheDao.clearCategory(category)
+        movieCacheDao.insertAll(movies.mapIndexed { index, movie -> movie.toCachedEntity(category, index) })
+        Resource.Success(movies)
+    } catch (e: IOException) {
+        val cached = movieCacheDao.getByCategory(category).map { it.toDomain() }
+        if (cached.isNotEmpty()) {
+            Resource.Success(cached)
+        } else {
+            Resource.Error("Couldn't connect. Check your internet connection.", e)
+        }
+    } catch (e: HttpException) {
+        Resource.Error("Something went wrong (code ${e.code()}).", e)
+    } catch (e: Exception) {
+        Resource.Error(e.message ?: "Unexpected error.", e)
+    }
+
+    private companion object {
+        const val CATEGORY_TRENDING = "trending"
+        const val CATEGORY_POPULAR = "popular"
+        const val CATEGORY_TOP_RATED = "top_rated"
+        const val CATEGORY_NOW_PLAYING = "now_playing"
+        const val CATEGORY_UPCOMING = "upcoming"
     }
 }

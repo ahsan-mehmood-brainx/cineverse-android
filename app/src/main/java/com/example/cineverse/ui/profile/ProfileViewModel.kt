@@ -14,10 +14,14 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
-/** Why a candidate name/bio pair can't be saved, so the form can point at the offending field. */
+/** Why a candidate profile form can't be saved, so the form can point at the offending field. */
 sealed class ProfileFormError {
     data object BlankName : ProfileFormError()
     data object NameTooLong : ProfileFormError()
+    data object BlankUsername : ProfileFormError()
+    data object UsernameTooLong : ProfileFormError()
+    data object BlankEmail : ProfileFormError()
+    data object InvalidEmail : ProfileFormError()
     data object BioTooLong : ProfileFormError()
 }
 
@@ -32,24 +36,40 @@ class ProfileViewModel @Inject constructor(
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), Resource.Loading)
 
     /** Pure so the edit form can validate on every keystroke without touching Room. */
-    fun validate(name: String, bio: String): ProfileFormError? = when {
+    fun validate(name: String, username: String, email: String, bio: String): ProfileFormError? = when {
         name.isBlank() -> ProfileFormError.BlankName
         name.trim().length > MAX_NAME_LENGTH -> ProfileFormError.NameTooLong
+        username.isBlank() -> ProfileFormError.BlankUsername
+        username.trim().length > MAX_USERNAME_LENGTH -> ProfileFormError.UsernameTooLong
+        email.isBlank() -> ProfileFormError.BlankEmail
+        !EMAIL_REGEX.matches(email.trim()) -> ProfileFormError.InvalidEmail
         bio.trim().length > MAX_BIO_LENGTH -> ProfileFormError.BioTooLong
         else -> null
     }
 
-    /** Returns false without saving if [name]/[bio] fail [validate]. */
-    fun save(name: String, bio: String): Boolean {
-        if (validate(name, bio) != null) return false
+    /** Returns false without saving if the fields fail [validate]. */
+    fun save(name: String, username: String, email: String, bio: String, profileImageUri: String?): Boolean {
+        if (validate(name, username, email, bio) != null) return false
         viewModelScope.launch {
-            repository.saveProfile(Profile(displayName = name.trim(), bio = bio.trim()))
+            repository.saveProfile(
+                Profile(
+                    displayName = name.trim(),
+                    bio = bio.trim(),
+                    username = username.trim(),
+                    email = email.trim(),
+                    profileImageUri = profileImageUri
+                )
+            )
         }
         return true
     }
 
     companion object {
         const val MAX_NAME_LENGTH = 50
+        const val MAX_USERNAME_LENGTH = 30
         const val MAX_BIO_LENGTH = 200
+
+        /** Deliberately simple (not RFC 5322-exhaustive): good enough to catch obvious typos. */
+        private val EMAIL_REGEX = Regex("^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$")
     }
 }

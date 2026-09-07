@@ -1,6 +1,7 @@
 package com.example.cineverse.data.repository
 
 import com.example.cineverse.data.local.dao.FavoriteMovieDao
+import com.example.cineverse.data.local.dao.MovieCacheDao
 import com.example.cineverse.data.local.entity.FavoriteMovieEntity
 import com.example.cineverse.data.remote.api.TMDBApi
 import com.example.cineverse.data.remote.dto.GenreDto
@@ -51,7 +52,8 @@ class MovieRepositoryImplTest {
     }
 
     private val favoriteMovieDao = FakeFavoriteMovieDao()
-    private val repository = MovieRepositoryImpl(api, favoriteMovieDao)
+    private val movieCacheDao: MovieCacheDao = mock()
+    private val repository = MovieRepositoryImpl(api, favoriteMovieDao, movieCacheDao)
 
     private val genresResponse = GenresResponseDto(
         genres = listOf(GenreDto(1, "Action"), GenreDto(5, "Sci-Fi"))
@@ -89,11 +91,47 @@ class MovieRepositoryImplTest {
     @Test
     fun getTrendingMovies_ioException_mapsToNetworkError() = runTest {
         whenever(api.getTrendingMovies()).thenAnswer { throw IOException("no connection") }
+        whenever(movieCacheDao.getByCategory(any())).thenReturn(emptyList())
 
         val result = repository.getTrendingMovies()
 
         assertThat(result).isInstanceOf(Resource.Error::class.java)
         assertThat((result as Resource.Error).message).contains("internet connection")
+    }
+
+    @Test
+    fun getPopularMovies_success_refreshesCache() = runTest {
+        whenever(api.getGenres()).thenReturn(genresResponse)
+        whenever(api.getPopularMovies(any())).thenReturn(
+            MoviesResponseDto(listOf(MovieDto(id = 1, title = "Dune", genreIds = listOf(1))))
+        )
+
+        repository.getPopularMovies()
+
+        verify(movieCacheDao).clearCategory(any())
+        verify(movieCacheDao).insertAll(any())
+    }
+
+    @Test
+    fun getTrendingMovies_ioException_fallsBackToCache() = runTest {
+        whenever(api.getTrendingMovies()).thenAnswer { throw IOException("no connection") }
+        val cachedEntity = com.example.cineverse.data.local.entity.CachedMovieEntity(
+            category = "trending",
+            id = 1,
+            position = 0,
+            title = "Dune",
+            posterUrl = null,
+            rating = 8.3,
+            releaseDate = "2021-10-22",
+            genre = "Sci-Fi",
+            overview = "A noble heir."
+        )
+        whenever(movieCacheDao.getByCategory(any())).thenReturn(listOf(cachedEntity))
+
+        val result = repository.getTrendingMovies()
+
+        assertThat(result).isInstanceOf(Resource.Success::class.java)
+        assertThat((result as Resource.Success).data.first().title).isEqualTo("Dune")
     }
 
     @Test

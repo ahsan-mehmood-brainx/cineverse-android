@@ -20,15 +20,32 @@
             android:orientation="vertical"
             android:padding="24dp">
 
-            <TextView
-                android:id="@+id/avatarInitialText"
+            <FrameLayout
                 android:layout_width="88dp"
-                android:layout_height="88dp"
-                android:background="@drawable/bg_avatar_circle"
-                android:gravity="center"
-                android:textAppearance="?attr/textAppearanceHeadlineMedium"
-                android:textColor="?attr/colorOnPrimaryContainer"
-                tools:text="A" />
+                android:layout_height="88dp">
+
+                <TextView
+                    android:id="@+id/avatarInitialText"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:background="@drawable/bg_avatar_circle"
+                    android:gravity="center"
+                    android:textAppearance="?attr/textAppearanceHeadlineMedium"
+                    android:textColor="?attr/colorOnPrimaryContainer"
+                    tools:text="A" />
+
+                <ImageView
+                    android:id="@+id/avatarImage"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:background="@drawable/bg_avatar_circle"
+                    android:clipToOutline="true"
+                    android:contentDescription="@null"
+                    android:scaleType="centerCrop"
+                    android:visibility="gone"
+                    tools:visibility="visible" />
+
+            </FrameLayout>
 
             <TextView
                 android:id="@+id/displayNameText"
@@ -38,6 +55,24 @@
                 android:textAppearance="?attr/textAppearanceHeadlineSmall"
                 android:textColor="?attr/colorOnBackground"
                 tools:text="Alex Rivera" />
+
+            <TextView
+                android:id="@+id/usernameText"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="2dp"
+                android:textAppearance="?attr/textAppearanceBodyMedium"
+                android:textColor="?attr/colorOnSurfaceVariant"
+                tools:text="@alexrivera" />
+
+            <TextView
+                android:id="@+id/emailText"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="2dp"
+                android:textAppearance="?attr/textAppearanceBodyMedium"
+                android:textColor="?attr/colorOnSurfaceVariant"
+                tools:text="alex.rivera@example.com" />
 
             <TextView
                 android:id="@+id/bioText"

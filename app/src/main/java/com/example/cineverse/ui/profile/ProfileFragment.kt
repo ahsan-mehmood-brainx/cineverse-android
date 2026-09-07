@@ -6,6 +6,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
+import coil.load
 import com.example.cineverse.R
 import com.example.cineverse.databinding.FragmentProfileBinding
 import com.example.cineverse.domain.model.Profile
@@ -54,12 +55,25 @@ class ProfileFragment : Fragment() {
 
     private fun bindProfile(profile: Profile) {
         val hasName = profile.displayName.isNotBlank()
-        binding.avatarInitialText.text = if (hasName) {
-            profile.displayName.trim().first().uppercase(Locale.getDefault())
+        val hasImage = !profile.profileImageUri.isNullOrBlank()
+
+        binding.avatarImage.setVisible(hasImage)
+        binding.avatarInitialText.setVisible(!hasImage)
+        if (hasImage) {
+            binding.avatarImage.load(profile.profileImageUri)
         } else {
-            "?"
+            binding.avatarInitialText.text = if (hasName) {
+                profile.displayName.trim().first().uppercase(Locale.getDefault())
+            } else {
+                "?"
+            }
         }
+
         binding.displayNameText.text = if (hasName) profile.displayName else getString(R.string.profile_name_placeholder)
+        binding.usernameText.text = "@${profile.username}"
+        binding.usernameText.setVisible(profile.username.isNotBlank())
+        binding.emailText.text = profile.email
+        binding.emailText.setVisible(profile.email.isNotBlank())
         binding.bioText.text = profile.bio.ifBlank { getString(R.string.profile_bio_placeholder) }
     }
 

@@ -5,9 +5,9 @@
     android:layout_height="wrap_content"
     android:gravity="center_vertical"
     android:orientation="horizontal"
-    android:paddingHorizontal="16dp"
-    android:paddingTop="20dp"
-    android:paddingBottom="8dp">
+    android:paddingHorizontal="@dimen/spacing_16"
+    android:paddingTop="@dimen/spacing_20"
+    android:paddingBottom="@dimen/spacing_8">
 
     <TextView
         android:id="@+id/sectionTitleText"

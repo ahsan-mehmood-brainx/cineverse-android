@@ -15,9 +15,9 @@ class MovieAdapterTest {
 
     @Before
     fun setUp() {
-        adapter = MovieAdapter { movie ->
+        adapter = MovieAdapter(onMovieClick = { movie ->
             movieClickedId = movie.id
-        }
+        })
     }
 
     @Test
